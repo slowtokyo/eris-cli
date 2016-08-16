@@ -32,22 +32,19 @@ func StartUpEris(do *definitions.Do) error {
 	if err := srv.StartService(doStart); err != nil {
 		return err
 	}
+
+	// start chain
+	// doChain.Name    - name of the chain (optional)
+	if do.ChainName != ""{
+		doChain := definitions.NowDo()
+		doChain.Name = do.ChainName
+
+		fmt.Println("starting up your chain...")
+		if err := chains.StartChain(doChain); err != nil {
+			return err
+		}
+	}
 	
-	// start chains
-	// do.Name    - name of the chain (required)
-
-	doChain := definitions.NowDo()
-	doChain.Name = do.ChainName
-
-	if doChain == nil {
-		return nil
-	}
-
-	fmt.Println("starting up your chain...")
-	if err := chains.StartChain(doChain); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -77,6 +74,26 @@ func ShutUpEris(do *definitions.Do) error {
 	}
 
 	// shutdown all chains
+	listOfChains := util.ErisContainersByType(definitions.TypeChain, false)
+
+	if len(listOfChains) == 0 {
+		return fmt.Errorf("no existing chains to stop")
+	}
+
+	namez := make([]string, len(listOfChains))
+	for i, chainName := range listOfChains {
+		namez[i] = chainName.ShortName
+	}
+
+	fmt.Println(namez)
+
+	doStopChain := definitions.NowDo()
+	doStopChain.Operations.Args = namez
+	doStopChain.Timeout = 10
+	if err := chains.KillChain(doStopChain); err != nil {
+		return err
+	}
+
 
 	return nil
 }
