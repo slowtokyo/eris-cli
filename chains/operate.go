@@ -43,6 +43,46 @@ func InstallChain(do *definitions.Do) error {
 	return setupChain(do, loaders.ErisChainInstall)
 }
 
+//function for killing multiple chains (takes array)
+func KillChains(do *definitions.Do) error {
+	var chains []*definitions.Chain
+
+	log.WithField("args", do.Operations.Args).Info("Building chains group")
+	for _, chainName := range do.Operations.Args {
+		c, e := BuildChainsGroup(chainName)
+		if e != nil {
+			return e
+		}
+		chains = append(chains, c...)
+	}
+	
+	// if force flag given, this will override any timeout flag
+	if do.Force {
+		do.Timeout = 0
+	}
+
+	for _, chain := range chains {
+		if util.IsChain(chain.Name, true) {
+			log.WithField("=>", chain.Name).Debug("Stopping chain")
+			if err := perform.DockerStop(chain.Service, chain.Operations, do.Timeout); err != nil {
+				return err
+			}
+
+		} else {
+			log.WithField("=>", chain.Name).Info("Chain not currently running. Skipping")
+		}
+
+		if do.Rm {
+			if err := perform.DockerRemove(chain.Service, chain.Operations, do.RmD, do.Volumes, do.Force); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+//function for killing a single chain
 func KillChain(do *definitions.Do) error {
 	chain, err := loaders.LoadChainDefinition(do.Name)
 	if err != nil {
@@ -510,4 +550,27 @@ func CleanUp(do *definitions.Do) error {
 	}
 
 	return nil
+}
+
+func BuildChainsGroup(chainName string, chains ...*definitions.Chain) ([]*definitions.Chain, error) {
+	log.WithFields(log.Fields{
+		"=>":        chainName,
+		"chains#": len(chains),
+	}).Debug("Building chains group for")
+	chain, err := loaders.LoadChainDefinition(chainName)
+	if err != nil {
+		return nil, err
+	}
+	if chain.Dependencies != nil {
+		for _, cName := range chain.Dependencies.Chains {
+			log.WithField("=>", cName).Debug("Found chain dependency")
+			c, e := BuildChainsGroup(cName)
+			if e != nil {
+				return nil, e
+			}
+			chains = append(chains, c...)
+		}
+	}
+	chains = append(chains, chain)
+	return chains, nil
 }

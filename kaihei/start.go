@@ -11,6 +11,18 @@ import (
 
 func StartUpEris(do *definitions.Do) error {
 
+	// start chain
+	// doChain.Name - name of the chain (optional)
+	if do.ChainName != ""{
+		doChain := definitions.NowDo()
+		doChain.Name = do.ChainName
+
+		fmt.Println("starting up your chain...")
+		if err := chains.StartChain(doChain); err != nil {
+			return err
+		}
+	}
+	
 	fmt.Println("starting up your services...")
 
 	// start services
@@ -33,18 +45,6 @@ func StartUpEris(do *definitions.Do) error {
 		return err
 	}
 
-	// start chain
-	// doChain.Name    - name of the chain (optional)
-	if do.ChainName != ""{
-		doChain := definitions.NowDo()
-		doChain.Name = do.ChainName
-
-		fmt.Println("starting up your chain...")
-		if err := chains.StartChain(doChain); err != nil {
-			return err
-		}
-	}
-	
 	return nil
 }
 
@@ -52,7 +52,7 @@ func ShutUpEris(do *definitions.Do) error {
 
 	fmt.Println("shutting down your services...")
 
-	// start services
+	// shutdown all services
 	listOfServices := util.ErisContainersByType(definitions.TypeService, false)
 
 	if len(listOfServices) == 0 {
@@ -90,10 +90,9 @@ func ShutUpEris(do *definitions.Do) error {
 	doStopChain := definitions.NowDo()
 	doStopChain.Operations.Args = namez
 	doStopChain.Timeout = 10
-	if err := chains.KillChain(doStopChain); err != nil {
+	if err := chains.KillChains(doStopChain); err != nil {
 		return err
 	}
-
 
 	return nil
 }

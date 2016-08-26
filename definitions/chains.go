@@ -7,6 +7,7 @@ type Chain struct {
 	ChainID string `mapstructure:"chain_id" json:"chain_id" yaml:"chain_id" toml:"chain_id"`
 	// type of the chain
 	ChainType string `mapstructure:"chain_type" json:"chain_type" yaml:"chain_type" toml:"chain_type"`
+	Chain string `json:"chain,omitempty" yaml:"chain,omitempty" toml:"chain,omitempty"`
 
 	// same fields as in the Service Struct/Service Specification
 	Service      *Service      `json:"service,omitempty" yaml:"service,omitempty" toml:"service,omitempty"`
