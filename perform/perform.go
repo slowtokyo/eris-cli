@@ -251,7 +251,15 @@ func DockerRunService(srv *def.Service, ops *def.Operation) error {
 
 	log.WithField("=>", optsServ.Name).Info("Container started")
 
-	return nil
+	runSuccess := ContainerRunning(ops.SrvContainerName)
+
+	if runSuccess {
+		return nil
+	} else {
+		log.WithField("=>", ops.SrvContainerName)
+		fmt.Println("Oops! Container shut down unexpectedly. This may be a problem with your environment. Please check network connection.")
+		return nil
+	}
 }
 
 // DockerExecService creates and runs a chain or a service container interactively.
