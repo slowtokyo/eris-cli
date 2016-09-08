@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"time"
 
 	"github.com/eris-ltd/eris-cli/config"
 	def "github.com/eris-ltd/eris-cli/definitions"
@@ -251,13 +252,17 @@ func DockerRunService(srv *def.Service, ops *def.Operation) error {
 
 	log.WithField("=>", optsServ.Name).Info("Container started")
 
+	duration := time.Duration(1)*time.Second
+
+	time.Sleep(duration)
+
 	runSuccess := ContainerRunning(ops.SrvContainerName)
 
 	if runSuccess {
 		return nil
 	} else {
 		log.WithField("=>", ops.SrvContainerName)
-		fmt.Println("Oops! Container shut down unexpectedly. This may be a problem with your environment. Please check network connection.")
+		fmt.Println("Oops! Container shut down unexpectedly. This may be a problem with your environment. Please check that the marmots did not eat your network connection.")
 		return nil
 	}
 }
