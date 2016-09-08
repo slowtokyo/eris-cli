@@ -13,8 +13,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"unicode"
 	"time"
+	"unicode"
 
 	"github.com/eris-ltd/eris-cli/config"
 	def "github.com/eris-ltd/eris-cli/definitions"
@@ -252,7 +252,7 @@ func DockerRunService(srv *def.Service, ops *def.Operation) error {
 
 	log.WithField("=>", optsServ.Name).Info("Container started")
 
-	duration := time.Duration(1)*time.Second
+	duration := time.Duration(1) * time.Second
 
 	time.Sleep(duration)
 
